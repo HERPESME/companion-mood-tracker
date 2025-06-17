@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,13 +7,15 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
-import { Heart, MessageSquare, TrendingUp, Shield, Mic, MicOff, Phone, AlertTriangle, Sparkles, Brain } from 'lucide-react';
+import { Heart, MessageSquare, TrendingUp, Shield, Mic, MicOff, Phone, AlertTriangle, Sparkles, Brain, UserPlus } from 'lucide-react';
 import { format, subDays, parseISO } from 'date-fns';
 import MoodAnalyzer from '@/components/MoodAnalyzer';
 import AIChat from '@/components/AIChat';
 import VoiceInput from '@/components/VoiceInput';
 import CrisisDetection from '@/components/CrisisDetection';
 import EmergencyResources from '@/components/EmergencyResources';
+import AuthPrompt from '@/components/AuthPrompt';
+import AnonymousLimitations from '@/components/AnonymousLimitations';
 
 interface JournalEntry {
   id: string;
@@ -41,6 +42,8 @@ const Index = () => {
   const [userName, setUserName] = useState('');
   const [showCrisisAlert, setShowCrisisAlert] = useState(false);
   const [moodData, setMoodData] = useState<MoodData[]>([]);
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const [isSignedIn, setIsSignedIn] = useState(false);
 
   // Load data from localStorage on component mount
   useEffect(() => {
@@ -129,12 +132,18 @@ const Index = () => {
     setCurrentEntry(text);
   };
 
+  const handleSignIn = () => {
+    setIsSignedIn(true);
+    setAnonymousMode(false);
+    setUserName('User'); // This would be set from actual auth data
+  };
+
   const toggleAnonymousMode = () => {
-    const newMode = !anonymousMode;
-    setAnonymousMode(newMode);
-    localStorage.setItem('anonymousMode', JSON.stringify(newMode));
-    
-    if (newMode) {
+    if (anonymousMode) {
+      setShowAuthDialog(true);
+    } else {
+      setIsSignedIn(false);
+      setAnonymousMode(true);
       setUserName('');
       localStorage.removeItem('userName');
     }
@@ -194,7 +203,7 @@ const Index = () => {
                   onClick={toggleAnonymousMode}
                   className="text-xs hover:scale-105 transition-transform cursor-pointer"
                 >
-                  {anonymousMode ? 'Sign In' : 'Go Anonymous'}
+                  {anonymousMode ? 'Sign In' : 'Sign Out'}
                 </Button>
               </div>
               
@@ -250,6 +259,13 @@ const Index = () => {
           <p className="text-gray-600">How are you feeling today? Your thoughts and emotions matter.</p>
         </div>
 
+        {/* Anonymous Mode Limitations */}
+        {anonymousMode && (
+          <div className="mb-6">
+            <AnonymousLimitations onSignInClick={() => setShowAuthDialog(true)} />
+          </div>
+        )}
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-4 lg:w-fit lg:grid-cols-4 cursor-pointer">
             <TabsTrigger value="journal" className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 transition-colors">
@@ -260,9 +276,14 @@ const Index = () => {
               <Heart className="w-4 h-4" />
               <span>AI Chat</span>
             </TabsTrigger>
-            <TabsTrigger value="insights" className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 transition-colors">
+            <TabsTrigger 
+              value="insights" 
+              className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 transition-colors"
+              disabled={anonymousMode}
+            >
               <TrendingUp className="w-4 h-4" />
               <span>Insights</span>
+              {anonymousMode && <Shield className="w-3 h-3 text-amber-500" />}
             </TabsTrigger>
             <TabsTrigger value="resources" className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 transition-colors">
               <Shield className="w-4 h-4" />
@@ -280,6 +301,11 @@ const Index = () => {
                 </CardTitle>
                 <CardDescription>
                   Express your thoughts and feelings freely. Our AI will provide supportive feedback.
+                  {anonymousMode && (
+                    <span className="block mt-1 text-amber-600 text-sm">
+                      ⚠️ Entries won't be saved in anonymous mode
+                    </span>
+                  )}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -308,6 +334,13 @@ const Index = () => {
             {/* Recent Entries */}
             <div className="space-y-4">
               <h3 className="text-xl font-semibold text-gray-900">Recent Entries</h3>
+              {entries.length === 0 && anonymousMode && (
+                <Card className="border-gray-200 bg-gray-50">
+                  <CardContent className="pt-6 text-center">
+                    <p className="text-gray-500">No entries yet. Start journaling to see your thoughts here!</p>
+                  </CardContent>
+                </Card>
+              )}
               {entries.slice(0, 3).map((entry) => (
                 <Card key={entry.id} className="shadow-md border-0 bg-white/70 backdrop-blur-sm hover:shadow-lg hover:scale-[1.02] transition-all duration-200 cursor-pointer">
                   <CardContent className="pt-6">
@@ -365,107 +398,130 @@ const Index = () => {
 
           {/* Insights Tab */}
           <TabsContent value="insights" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Mood Trend Chart */}
-              <Card className="shadow-lg border-0 bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
-                <CardHeader>
-                  <CardTitle>Mood Trends (30 Days)</CardTitle>
-                  <CardDescription>Track your emotional well-being over time</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={moodData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e0e7ff" />
-                      <XAxis dataKey="date" stroke="#6b7280" fontSize={12} />
-                      <YAxis domain={[0, 5]} stroke="#6b7280" fontSize={12} />
-                      <Tooltip 
-                        contentStyle={{ 
-                          backgroundColor: '#ffffff', 
-                          border: '1px solid #e5e7eb',
-                          borderRadius: '8px',
-                          cursor: 'pointer'
-                        }}
-                      />
-                      <Line 
-                        type="monotone" 
-                        dataKey="mood" 
-                        stroke="#3b82f6" 
-                        strokeWidth={3}
-                        dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4, cursor: 'pointer' }}
-                        activeDot={{ r: 6, stroke: '#3b82f6', strokeWidth: 2, cursor: 'pointer' }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
+            {anonymousMode ? (
+              <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50">
+                <CardContent className="pt-6 text-center space-y-4">
+                  <div className="w-16 h-16 mx-auto bg-amber-100 rounded-full flex items-center justify-center">
+                    <TrendingUp className="w-8 h-8 text-amber-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-amber-800 mb-2">Insights Unavailable</h3>
+                    <p className="text-amber-700 mb-4">
+                      Sign in to unlock personalized mood tracking, trend analysis, and AI-powered insights about your mental wellness journey.
+                    </p>
+                    <Button 
+                      onClick={() => setShowAuthDialog(true)}
+                      className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"
+                    >
+                      <UserPlus className="w-4 h-4 mr-2" />
+                      Sign In to View Insights
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Mood Trend Chart */}
+                <Card className="shadow-lg border-0 bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
+                  <CardHeader>
+                    <CardTitle>Mood Trends (30 Days)</CardTitle>
+                    <CardDescription>Track your emotional well-being over time</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <LineChart data={moodData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e0e7ff" />
+                        <XAxis dataKey="date" stroke="#6b7280" fontSize={12} />
+                        <YAxis domain={[0, 5]} stroke="#6b7280" fontSize={12} />
+                        <Tooltip 
+                          contentStyle={{ 
+                            backgroundColor: '#ffffff', 
+                            border: '1px solid #e5e7eb',
+                            borderRadius: '8px',
+                            cursor: 'pointer'
+                          }}
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="mood" 
+                          stroke="#3b82f6" 
+                          strokeWidth={3}
+                          dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4, cursor: 'pointer' }}
+                          activeDot={{ r: 6, stroke: '#3b82f6', strokeWidth: 2, cursor: 'pointer' }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
 
-              {/* Emotion Distribution */}
-              <Card className="shadow-lg border-0 bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
-                <CardHeader>
-                  <CardTitle>Emotion Patterns</CardTitle>
-                  <CardDescription>Your most common emotional states</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {Object.entries(emotionColors).slice(0, 6).map(([emotion, colorClass]) => (
-                      <div key={emotion} className="flex items-center justify-between hover:bg-gray-50 p-2 rounded cursor-pointer transition-colors">
-                        <div className="flex items-center space-x-2">
-                          <div className={`w-3 h-3 rounded-full ${colorClass.split(' ')[0]}`} />
-                          <span className="text-sm font-medium capitalize">{emotion}</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <div className="w-20 bg-gray-200 rounded-full h-2 cursor-pointer">
-                            <div 
-                              className={`h-2 rounded-full ${colorClass.split(' ')[0]} transition-all hover:opacity-80`}
-                              style={{ width: `${Math.random() * 80 + 20}%` }}
-                            />
+                {/* Emotion Distribution */}
+                <Card className="shadow-lg border-0 bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
+                  <CardHeader>
+                    <CardTitle>Emotion Patterns</CardTitle>
+                    <CardDescription>Your most common emotional states</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {Object.entries(emotionColors).slice(0, 6).map(([emotion, colorClass]) => (
+                        <div key={emotion} className="flex items-center justify-between hover:bg-gray-50 p-2 rounded cursor-pointer transition-colors">
+                          <div className="flex items-center space-x-2">
+                            <div className={`w-3 h-3 rounded-full ${colorClass.split(' ')[0]}`} />
+                            <span className="text-sm font-medium capitalize">{emotion}</span>
                           </div>
-                          <span className="text-xs text-gray-500 w-8">
-                            {Math.floor(Math.random() * 40 + 10)}%
-                          </span>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-20 bg-gray-200 rounded-full h-2 cursor-pointer">
+                              <div 
+                                className={`h-2 rounded-full ${colorClass.split(' ')[0]} transition-all hover:opacity-80`}
+                                style={{ width: `${Math.random() * 80 + 20}%` }}
+                              />
+                            </div>
+                            <span className="text-xs text-gray-500 w-8">
+                              {Math.floor(Math.random() * 40 + 10)}%
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Weekly Summary */}
+              <Card className="shadow-lg border-0 bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
+                <CardHeader>
+                  <CardTitle>Weekly Insights</CardTitle>
+                  <CardDescription>AI-generated summary of your mental health journey</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 hover:bg-green-100 transition-colors cursor-pointer">
+                      <h4 className="font-medium text-green-800 mb-2">🌱 Growth Areas</h4>
+                      <p className="text-sm text-green-700">
+                        You've shown increased self-reflection and mindfulness this week. Your entries indicate 
+                        growing emotional awareness and positive coping strategies.
+                      </p>
+                    </div>
+                    
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 hover:bg-blue-100 transition-colors cursor-pointer">
+                      <h4 className="font-medium text-blue-800 mb-2">💡 Recommendations</h4>
+                      <ul className="text-sm text-blue-700 space-y-1">
+                        <li>• Continue your morning journaling routine</li>
+                        <li>• Try incorporating 5-minute breathing exercises</li>
+                        <li>• Consider exploring gratitude practices</li>
+                      </ul>
+                    </div>
+                    
+                    <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 hover:bg-purple-100 transition-colors cursor-pointer">
+                      <h4 className="font-medium text-purple-800 mb-2">🎯 Focus Areas</h4>
+                      <p className="text-sm text-purple-700">
+                        Work on stress management techniques and maintaining consistent sleep patterns 
+                        to support your overall well-being.
+                      </p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
-            </div>
-
-            {/* Weekly Summary */}
-            <Card className="shadow-lg border-0 bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
-              <CardHeader>
-                <CardTitle>Weekly Insights</CardTitle>
-                <CardDescription>AI-generated summary of your mental health journey</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 hover:bg-green-100 transition-colors cursor-pointer">
-                    <h4 className="font-medium text-green-800 mb-2">🌱 Growth Areas</h4>
-                    <p className="text-sm text-green-700">
-                      You've shown increased self-reflection and mindfulness this week. Your entries indicate 
-                      growing emotional awareness and positive coping strategies.
-                    </p>
-                  </div>
-                  
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 hover:bg-blue-100 transition-colors cursor-pointer">
-                    <h4 className="font-medium text-blue-800 mb-2">💡 Recommendations</h4>
-                    <ul className="text-sm text-blue-700 space-y-1">
-                      <li>• Continue your morning journaling routine</li>
-                      <li>• Try incorporating 5-minute breathing exercises</li>
-                      <li>• Consider exploring gratitude practices</li>
-                    </ul>
-                  </div>
-                  
-                  <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 hover:bg-purple-100 transition-colors cursor-pointer">
-                    <h4 className="font-medium text-purple-800 mb-2">🎯 Focus Areas</h4>
-                    <p className="text-sm text-purple-700">
-                      Work on stress management techniques and maintaining consistent sleep patterns 
-                      to support your overall well-being.
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            )}
           </TabsContent>
 
           {/* Resources Tab */}
@@ -474,6 +530,13 @@ const Index = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Auth Dialog */}
+      <AuthPrompt 
+        onSignIn={handleSignIn}
+        isOpen={showAuthDialog}
+        onOpenChange={setShowAuthDialog}
+      />
     </div>
   );
 };
