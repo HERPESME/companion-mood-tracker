@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -117,7 +118,9 @@ const Index = () => {
       setEntries(updatedEntries);
       generateMoodData(updatedEntries);
       
-      localStorage.setItem('mentalHealthEntries', JSON.stringify(updatedEntries));
+      if (!anonymousMode) {
+        localStorage.setItem('mentalHealthEntries', JSON.stringify(updatedEntries));
+      }
       
       setCurrentEntry('');
       setActiveTab('chat');
@@ -136,6 +139,7 @@ const Index = () => {
     setIsSignedIn(true);
     setAnonymousMode(false);
     setUserName('User'); // This would be set from actual auth data
+    localStorage.setItem('anonymousMode', JSON.stringify(false));
   };
 
   const toggleAnonymousMode = () => {
@@ -146,12 +150,15 @@ const Index = () => {
       setAnonymousMode(true);
       setUserName('');
       localStorage.removeItem('userName');
+      localStorage.setItem('anonymousMode', JSON.stringify(true));
     }
   };
 
   const handleUserNameChange = (name: string) => {
     setUserName(name);
-    localStorage.setItem('userName', name);
+    if (!anonymousMode) {
+      localStorage.setItem('userName', name);
+    }
   };
 
   const getGreeting = () => {
@@ -334,10 +341,15 @@ const Index = () => {
             {/* Recent Entries */}
             <div className="space-y-4">
               <h3 className="text-xl font-semibold text-gray-900">Recent Entries</h3>
-              {entries.length === 0 && anonymousMode && (
+              {entries.length === 0 && (
                 <Card className="border-gray-200 bg-gray-50">
                   <CardContent className="pt-6 text-center">
-                    <p className="text-gray-500">No entries yet. Start journaling to see your thoughts here!</p>
+                    <p className="text-gray-500">
+                      {anonymousMode 
+                        ? "No entries yet. Start journaling to see your thoughts here! Note: Entries won't be saved in anonymous mode."
+                        : "No entries yet. Start journaling to see your thoughts here!"
+                      }
+                    </p>
                   </CardContent>
                 </Card>
               )}
@@ -420,107 +432,109 @@ const Index = () => {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Mood Trend Chart */}
-                <Card className="shadow-lg border-0 bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
-                  <CardHeader>
-                    <CardTitle>Mood Trends (30 Days)</CardTitle>
-                    <CardDescription>Track your emotional well-being over time</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <LineChart data={moodData}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#e0e7ff" />
-                        <XAxis dataKey="date" stroke="#6b7280" fontSize={12} />
-                        <YAxis domain={[0, 5]} stroke="#6b7280" fontSize={12} />
-                        <Tooltip 
-                          contentStyle={{ 
-                            backgroundColor: '#ffffff', 
-                            border: '1px solid #e5e7eb',
-                            borderRadius: '8px',
-                            cursor: 'pointer'
-                          }}
-                        />
-                        <Line 
-                          type="monotone" 
-                          dataKey="mood" 
-                          stroke="#3b82f6" 
-                          strokeWidth={3}
-                          dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4, cursor: 'pointer' }}
-                          activeDot={{ r: 6, stroke: '#3b82f6', strokeWidth: 2, cursor: 'pointer' }}
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </CardContent>
-                </Card>
+              <>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Mood Trend Chart */}
+                  <Card className="shadow-lg border-0 bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
+                    <CardHeader>
+                      <CardTitle>Mood Trends (30 Days)</CardTitle>
+                      <CardDescription>Track your emotional well-being over time</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={300}>
+                        <LineChart data={moodData}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#e0e7ff" />
+                          <XAxis dataKey="date" stroke="#6b7280" fontSize={12} />
+                          <YAxis domain={[0, 5]} stroke="#6b7280" fontSize={12} />
+                          <Tooltip 
+                            contentStyle={{ 
+                              backgroundColor: '#ffffff', 
+                              border: '1px solid #e5e7eb',
+                              borderRadius: '8px',
+                              cursor: 'pointer'
+                            }}
+                          />
+                          <Line 
+                            type="monotone" 
+                            dataKey="mood" 
+                            stroke="#3b82f6" 
+                            strokeWidth={3}
+                            dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4, cursor: 'pointer' }}
+                            activeDot={{ r: 6, stroke: '#3b82f6', strokeWidth: 2, cursor: 'pointer' }}
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
 
-                {/* Emotion Distribution */}
-                <Card className="shadow-lg border-0 bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
-                  <CardHeader>
-                    <CardTitle>Emotion Patterns</CardTitle>
-                    <CardDescription>Your most common emotional states</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {Object.entries(emotionColors).slice(0, 6).map(([emotion, colorClass]) => (
-                        <div key={emotion} className="flex items-center justify-between hover:bg-gray-50 p-2 rounded cursor-pointer transition-colors">
-                          <div className="flex items-center space-x-2">
-                            <div className={`w-3 h-3 rounded-full ${colorClass.split(' ')[0]}`} />
-                            <span className="text-sm font-medium capitalize">{emotion}</span>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <div className="w-20 bg-gray-200 rounded-full h-2 cursor-pointer">
-                              <div 
-                                className={`h-2 rounded-full ${colorClass.split(' ')[0]} transition-all hover:opacity-80`}
-                                style={{ width: `${Math.random() * 80 + 20}%` }}
-                              />
+                  {/* Emotion Distribution */}
+                  <Card className="shadow-lg border-0 bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
+                    <CardHeader>
+                      <CardTitle>Emotion Patterns</CardTitle>
+                      <CardDescription>Your most common emotional states</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {Object.entries(emotionColors).slice(0, 6).map(([emotion, colorClass]) => (
+                          <div key={emotion} className="flex items-center justify-between hover:bg-gray-50 p-2 rounded cursor-pointer transition-colors">
+                            <div className="flex items-center space-x-2">
+                              <div className={`w-3 h-3 rounded-full ${colorClass.split(' ')[0]}`} />
+                              <span className="text-sm font-medium capitalize">{emotion}</span>
                             </div>
-                            <span className="text-xs text-gray-500 w-8">
-                              {Math.floor(Math.random() * 40 + 10)}%
-                            </span>
+                            <div className="flex items-center space-x-2">
+                              <div className="w-20 bg-gray-200 rounded-full h-2 cursor-pointer">
+                                <div 
+                                  className={`h-2 rounded-full ${colorClass.split(' ')[0]} transition-all hover:opacity-80`}
+                                  style={{ width: `${Math.random() * 80 + 20}%` }}
+                                />
+                              </div>
+                              <span className="text-xs text-gray-500 w-8">
+                                {Math.floor(Math.random() * 40 + 10)}%
+                              </span>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Weekly Summary */}
+                <Card className="shadow-lg border-0 bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
+                  <CardHeader>
+                    <CardTitle>Weekly Insights</CardTitle>
+                    <CardDescription>AI-generated summary of your mental health journey</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-4 hover:bg-green-100 transition-colors cursor-pointer">
+                        <h4 className="font-medium text-green-800 mb-2">🌱 Growth Areas</h4>
+                        <p className="text-sm text-green-700">
+                          You've shown increased self-reflection and mindfulness this week. Your entries indicate 
+                          growing emotional awareness and positive coping strategies.
+                        </p>
+                      </div>
+                      
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 hover:bg-blue-100 transition-colors cursor-pointer">
+                        <h4 className="font-medium text-blue-800 mb-2">💡 Recommendations</h4>
+                        <ul className="text-sm text-blue-700 space-y-1">
+                          <li>• Continue your morning journaling routine</li>
+                          <li>• Try incorporating 5-minute breathing exercises</li>
+                          <li>• Consider exploring gratitude practices</li>
+                        </ul>
+                      </div>
+                      
+                      <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 hover:bg-purple-100 transition-colors cursor-pointer">
+                        <h4 className="font-medium text-purple-800 mb-2">🎯 Focus Areas</h4>
+                        <p className="text-sm text-purple-700">
+                          Work on stress management techniques and maintaining consistent sleep patterns 
+                          to support your overall well-being.
+                        </p>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
-              </div>
-
-              {/* Weekly Summary */}
-              <Card className="shadow-lg border-0 bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
-                <CardHeader>
-                  <CardTitle>Weekly Insights</CardTitle>
-                  <CardDescription>AI-generated summary of your mental health journey</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 hover:bg-green-100 transition-colors cursor-pointer">
-                      <h4 className="font-medium text-green-800 mb-2">🌱 Growth Areas</h4>
-                      <p className="text-sm text-green-700">
-                        You've shown increased self-reflection and mindfulness this week. Your entries indicate 
-                        growing emotional awareness and positive coping strategies.
-                      </p>
-                    </div>
-                    
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 hover:bg-blue-100 transition-colors cursor-pointer">
-                      <h4 className="font-medium text-blue-800 mb-2">💡 Recommendations</h4>
-                      <ul className="text-sm text-blue-700 space-y-1">
-                        <li>• Continue your morning journaling routine</li>
-                        <li>• Try incorporating 5-minute breathing exercises</li>
-                        <li>• Consider exploring gratitude practices</li>
-                      </ul>
-                    </div>
-                    
-                    <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 hover:bg-purple-100 transition-colors cursor-pointer">
-                      <h4 className="font-medium text-purple-800 mb-2">🎯 Focus Areas</h4>
-                      <p className="text-sm text-purple-700">
-                        Work on stress management techniques and maintaining consistent sleep patterns 
-                        to support your overall well-being.
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              </>
             )}
           </TabsContent>
 
