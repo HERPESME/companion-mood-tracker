@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
-import { Heart, MessageSquare, TrendingUp, Shield, Mic, MicOff, Phone, AlertTriangle } from 'lucide-react';
+import { Heart, MessageSquare, TrendingUp, Shield, Mic, MicOff, Phone, AlertTriangle, Sparkles, Brain } from 'lucide-react';
 import { format, subDays, parseISO } from 'date-fns';
 import MoodAnalyzer from '@/components/MoodAnalyzer';
 import AIChat from '@/components/AIChat';
@@ -103,19 +103,17 @@ const Index = () => {
         timestamp: Date.now()
       };
       
-      // This would normally call the AI services
-      // For now, we'll simulate the response
+      // Simulate AI analysis
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      newEntry.mood = Math.random() * 5 + 1; // Random mood for demo
-      newEntry.emotions = ['reflective', 'hopeful']; // Demo emotions
+      newEntry.mood = Math.random() * 5 + 1;
+      newEntry.emotions = ['reflective', 'hopeful'];
       newEntry.aiResponse = "Thank you for sharing your thoughts. I can sense there's a lot on your mind today. Remember that it's completely normal to feel this way, and you're taking a positive step by expressing these feelings. What would you like to explore further about this experience?";
       
       const updatedEntries = [newEntry, ...entries];
       setEntries(updatedEntries);
       generateMoodData(updatedEntries);
       
-      // Save to localStorage
       localStorage.setItem('mentalHealthEntries', JSON.stringify(updatedEntries));
       
       setCurrentEntry('');
@@ -155,14 +153,14 @@ const Index = () => {
   };
 
   const emotionColors = {
-    happy: 'bg-yellow-100 text-yellow-800',
-    sad: 'bg-blue-100 text-blue-800',
-    anxious: 'bg-red-100 text-red-800',
-    calm: 'bg-green-100 text-green-800',
-    reflective: 'bg-purple-100 text-purple-800',
-    hopeful: 'bg-emerald-100 text-emerald-800',
-    frustrated: 'bg-orange-100 text-orange-800',
-    grateful: 'bg-pink-100 text-pink-800'
+    happy: 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200 cursor-pointer',
+    sad: 'bg-blue-100 text-blue-800 hover:bg-blue-200 cursor-pointer',
+    anxious: 'bg-red-100 text-red-800 hover:bg-red-200 cursor-pointer',
+    calm: 'bg-green-100 text-green-800 hover:bg-green-200 cursor-pointer',
+    reflective: 'bg-purple-100 text-purple-800 hover:bg-purple-200 cursor-pointer',
+    hopeful: 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200 cursor-pointer',
+    frustrated: 'bg-orange-100 text-orange-800 hover:bg-orange-200 cursor-pointer',
+    grateful: 'bg-pink-100 text-pink-800 hover:bg-pink-200 cursor-pointer'
   };
 
   return (
@@ -171,12 +169,15 @@ const Index = () => {
       <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg">
+            <div className="flex items-center space-x-3 cursor-pointer hover:scale-105 transition-transform">
+              <div className="p-2 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg shadow-lg">
                 <Heart className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">MindfulJourney</h1>
+                <h1 className="text-xl font-bold text-gray-900 flex items-center">
+                  MindfulJourney
+                  <Sparkles className="w-4 h-4 ml-2 text-purple-500" />
+                </h1>
                 <p className="text-sm text-gray-600">AI-Powered Mental Wellness</p>
               </div>
             </div>
@@ -191,7 +192,7 @@ const Index = () => {
                   variant="outline"
                   size="sm"
                   onClick={toggleAnonymousMode}
-                  className="text-xs"
+                  className="text-xs hover:scale-105 transition-transform cursor-pointer"
                 >
                   {anonymousMode ? 'Sign In' : 'Go Anonymous'}
                 </Button>
@@ -202,7 +203,7 @@ const Index = () => {
                   placeholder="Your name"
                   value={userName}
                   onChange={(e) => handleUserNameChange(e.target.value)}
-                  className="w-32 h-8 text-sm"
+                  className="w-32 h-8 text-sm cursor-text hover:border-blue-400 transition-colors"
                 />
               )}
             </div>
@@ -212,17 +213,26 @@ const Index = () => {
 
       {/* Crisis Alert */}
       {showCrisisAlert && (
-        <Alert className="max-w-7xl mx-auto mt-4 mx-4 bg-red-50 border-red-200">
+        <Alert className="max-w-7xl mx-auto mt-4 mx-4 bg-red-50 border-red-200 animate-fade-in">
           <AlertTriangle className="h-4 w-4 text-red-600" />
           <AlertTitle className="text-red-800">Crisis Support Available</AlertTitle>
           <AlertDescription className="text-red-700">
             If you're having thoughts of self-harm, please reach out for immediate help.
             <div className="mt-2 space-x-2">
-              <Button size="sm" variant="destructive">
+              <Button 
+                size="sm" 
+                variant="destructive"
+                className="hover:scale-105 transition-transform cursor-pointer"
+              >
                 <Phone className="w-4 h-4 mr-1" />
                 Crisis Hotline
               </Button>
-              <Button size="sm" variant="outline" onClick={() => setShowCrisisAlert(false)}>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={() => setShowCrisisAlert(false)}
+                className="hover:scale-105 transition-transform cursor-pointer"
+              >
                 I'm Safe
               </Button>
             </div>
@@ -232,26 +242,29 @@ const Index = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">{getGreeting()}</h2>
+        <div className="mb-8 text-center">
+          <h2 className="text-3xl font-bold text-gray-900 mb-2 flex items-center justify-center">
+            {getGreeting()}
+            <Brain className="w-8 h-8 ml-3 text-blue-500" />
+          </h2>
           <p className="text-gray-600">How are you feeling today? Your thoughts and emotions matter.</p>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:w-fit lg:grid-cols-4">
-            <TabsTrigger value="journal" className="flex items-center space-x-2">
+          <TabsList className="grid w-full grid-cols-4 lg:w-fit lg:grid-cols-4 cursor-pointer">
+            <TabsTrigger value="journal" className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 transition-colors">
               <MessageSquare className="w-4 h-4" />
               <span>Journal</span>
             </TabsTrigger>
-            <TabsTrigger value="chat" className="flex items-center space-x-2">
+            <TabsTrigger value="chat" className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 transition-colors">
               <Heart className="w-4 h-4" />
               <span>AI Chat</span>
             </TabsTrigger>
-            <TabsTrigger value="insights" className="flex items-center space-x-2">
+            <TabsTrigger value="insights" className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 transition-colors">
               <TrendingUp className="w-4 h-4" />
               <span>Insights</span>
             </TabsTrigger>
-            <TabsTrigger value="resources" className="flex items-center space-x-2">
+            <TabsTrigger value="resources" className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 transition-colors">
               <Shield className="w-4 h-4" />
               <span>Resources</span>
             </TabsTrigger>
@@ -259,7 +272,7 @@ const Index = () => {
 
           {/* Journal Tab */}
           <TabsContent value="journal" className="space-y-6">
-            <Card className="shadow-lg border-0 bg-white/70 backdrop-blur-sm">
+            <Card className="shadow-lg border-0 bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <span>Daily Journal Entry</span>
@@ -274,7 +287,7 @@ const Index = () => {
                   placeholder="What's on your mind today? How are you feeling?"
                   value={currentEntry}
                   onChange={(e) => setCurrentEntry(e.target.value)}
-                  className="min-h-32 resize-none border-gray-200 focus:border-blue-400"
+                  className="min-h-32 resize-none border-gray-200 focus:border-blue-400 cursor-text hover:border-gray-300 transition-colors"
                 />
                 
                 <div className="flex justify-between items-center">
@@ -284,7 +297,7 @@ const Index = () => {
                   <Button 
                     onClick={handleSubmitEntry}
                     disabled={!currentEntry.trim() || isAnalyzing}
-                    className="bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600"
+                    className="bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 hover:scale-105 transition-all cursor-pointer disabled:cursor-not-allowed"
                   >
                     {isAnalyzing ? 'Analyzing...' : 'Submit Entry'}
                   </Button>
@@ -296,7 +309,7 @@ const Index = () => {
             <div className="space-y-4">
               <h3 className="text-xl font-semibold text-gray-900">Recent Entries</h3>
               {entries.slice(0, 3).map((entry) => (
-                <Card key={entry.id} className="shadow-md border-0 bg-white/70 backdrop-blur-sm">
+                <Card key={entry.id} className="shadow-md border-0 bg-white/70 backdrop-blur-sm hover:shadow-lg hover:scale-[1.02] transition-all duration-200 cursor-pointer">
                   <CardContent className="pt-6">
                     <div className="flex justify-between items-start mb-3">
                       <span className="text-sm text-gray-500">{entry.date}</span>
@@ -305,7 +318,7 @@ const Index = () => {
                           {[...Array(5)].map((_, i) => (
                             <div
                               key={i}
-                              className={`w-2 h-2 rounded-full ${
+                              className={`w-2 h-2 rounded-full transition-colors cursor-pointer hover:scale-125 ${
                                 i < entry.mood ? 'bg-green-400' : 'bg-gray-200'
                               }`}
                             />
@@ -325,7 +338,7 @@ const Index = () => {
                           <Badge
                             key={index}
                             variant="secondary"
-                            className={emotionColors[emotion as keyof typeof emotionColors] || 'bg-gray-100 text-gray-800'}
+                            className={emotionColors[emotion as keyof typeof emotionColors] || 'bg-gray-100 text-gray-800 hover:bg-gray-200 cursor-pointer'}
                           >
                             {emotion}
                           </Badge>
@@ -334,7 +347,7 @@ const Index = () => {
                     )}
                     
                     {entry.aiResponse && (
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3 hover:bg-blue-100 transition-colors cursor-pointer">
                         <p className="text-sm text-blue-800 font-medium mb-1">AI Reflection:</p>
                         <p className="text-sm text-blue-700">{entry.aiResponse}</p>
                       </div>
@@ -354,7 +367,7 @@ const Index = () => {
           <TabsContent value="insights" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Mood Trend Chart */}
-              <Card className="shadow-lg border-0 bg-white/70 backdrop-blur-sm">
+              <Card className="shadow-lg border-0 bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
                 <CardHeader>
                   <CardTitle>Mood Trends (30 Days)</CardTitle>
                   <CardDescription>Track your emotional well-being over time</CardDescription>
@@ -369,7 +382,8 @@ const Index = () => {
                         contentStyle={{ 
                           backgroundColor: '#ffffff', 
                           border: '1px solid #e5e7eb',
-                          borderRadius: '8px'
+                          borderRadius: '8px',
+                          cursor: 'pointer'
                         }}
                       />
                       <Line 
@@ -377,8 +391,8 @@ const Index = () => {
                         dataKey="mood" 
                         stroke="#3b82f6" 
                         strokeWidth={3}
-                        dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
-                        activeDot={{ r: 6, stroke: '#3b82f6', strokeWidth: 2 }}
+                        dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4, cursor: 'pointer' }}
+                        activeDot={{ r: 6, stroke: '#3b82f6', strokeWidth: 2, cursor: 'pointer' }}
                       />
                     </LineChart>
                   </ResponsiveContainer>
@@ -386,7 +400,7 @@ const Index = () => {
               </Card>
 
               {/* Emotion Distribution */}
-              <Card className="shadow-lg border-0 bg-white/70 backdrop-blur-sm">
+              <Card className="shadow-lg border-0 bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
                 <CardHeader>
                   <CardTitle>Emotion Patterns</CardTitle>
                   <CardDescription>Your most common emotional states</CardDescription>
@@ -394,15 +408,15 @@ const Index = () => {
                 <CardContent>
                   <div className="space-y-3">
                     {Object.entries(emotionColors).slice(0, 6).map(([emotion, colorClass]) => (
-                      <div key={emotion} className="flex items-center justify-between">
+                      <div key={emotion} className="flex items-center justify-between hover:bg-gray-50 p-2 rounded cursor-pointer transition-colors">
                         <div className="flex items-center space-x-2">
                           <div className={`w-3 h-3 rounded-full ${colorClass.split(' ')[0]}`} />
                           <span className="text-sm font-medium capitalize">{emotion}</span>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <div className="w-20 bg-gray-200 rounded-full h-2">
+                          <div className="w-20 bg-gray-200 rounded-full h-2 cursor-pointer">
                             <div 
-                              className={`h-2 rounded-full ${colorClass.split(' ')[0]}`}
+                              className={`h-2 rounded-full ${colorClass.split(' ')[0]} transition-all hover:opacity-80`}
                               style={{ width: `${Math.random() * 80 + 20}%` }}
                             />
                           </div>
@@ -418,14 +432,14 @@ const Index = () => {
             </div>
 
             {/* Weekly Summary */}
-            <Card className="shadow-lg border-0 bg-white/70 backdrop-blur-sm">
+            <Card className="shadow-lg border-0 bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300">
               <CardHeader>
                 <CardTitle>Weekly Insights</CardTitle>
                 <CardDescription>AI-generated summary of your mental health journey</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 hover:bg-green-100 transition-colors cursor-pointer">
                     <h4 className="font-medium text-green-800 mb-2">🌱 Growth Areas</h4>
                     <p className="text-sm text-green-700">
                       You've shown increased self-reflection and mindfulness this week. Your entries indicate 
@@ -433,7 +447,7 @@ const Index = () => {
                     </p>
                   </div>
                   
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 hover:bg-blue-100 transition-colors cursor-pointer">
                     <h4 className="font-medium text-blue-800 mb-2">💡 Recommendations</h4>
                     <ul className="text-sm text-blue-700 space-y-1">
                       <li>• Continue your morning journaling routine</li>
@@ -442,7 +456,7 @@ const Index = () => {
                     </ul>
                   </div>
                   
-                  <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                  <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 hover:bg-purple-100 transition-colors cursor-pointer">
                     <h4 className="font-medium text-purple-800 mb-2">🎯 Focus Areas</h4>
                     <p className="text-sm text-purple-700">
                       Work on stress management techniques and maintaining consistent sleep patterns 
