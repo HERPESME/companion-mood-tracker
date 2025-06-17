@@ -11,7 +11,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { Heart, MessageSquare, TrendingUp, Shield, Mic, MicOff, Phone, AlertTriangle } from 'lucide-react';
 import { format, subDays, parseISO } from 'date-fns';
 import MoodAnalyzer from '@/components/MoodAnalyzer';
-import AIChatbot from '@/components/AIChat';
+import AIChat from '@/components/AIChat';
 import VoiceInput from '@/components/VoiceInput';
 import CrisisDetection from '@/components/CrisisDetection';
 import EmergencyResources from '@/components/EmergencyResources';
