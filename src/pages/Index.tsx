@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,6 +16,8 @@ import CrisisDetection from '@/components/CrisisDetection';
 import EmergencyResources from '@/components/EmergencyResources';
 import AuthPrompt from '@/components/AuthPrompt';
 import AnonymousLimitations from '@/components/AnonymousLimitations';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 
 interface JournalEntry {
   id: string;
@@ -180,56 +181,44 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3 cursor-pointer hover:scale-105 transition-transform">
-              <div className="p-2 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg shadow-lg">
-                <Heart className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900 flex items-center">
-                  MindfulJourney
-                  <Sparkles className="w-4 h-4 ml-2 text-purple-500" />
-                </h1>
-                <p className="text-sm text-gray-600">AI-Powered Mental Wellness</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <Shield className="w-4 h-4 text-gray-500" />
-                <span className="text-sm text-gray-600">
-                  {anonymousMode ? 'Anonymous Mode' : 'Personal Mode'}
-                </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={toggleAnonymousMode}
-                  className="text-xs hover:scale-105 transition-transform cursor-pointer"
-                >
-                  {anonymousMode ? 'Sign In' : 'Sign Out'}
-                </Button>
-              </div>
-              
-              {!anonymousMode && (
-                <Input
-                  placeholder="Your name"
-                  value={userName}
-                  onChange={(e) => handleUserNameChange(e.target.value)}
-                  className="w-32 h-8 text-sm cursor-text hover:border-blue-400 transition-colors"
-                />
-              )}
-            </div>
-          </div>
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Enhanced Background */}
+      <div className="fixed inset-0 -z-10">
+        {/* Main gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white via-purple-50/30 to-green-50"></div>
+        
+        {/* Animated background elements */}
+        <div className="absolute top-20 left-20 w-64 h-64 bg-blue-200/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute top-40 right-32 w-48 h-48 bg-purple-200/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute bottom-32 left-32 w-56 h-56 bg-green-200/20 rounded-full blur-3xl animate-pulse delay-2000"></div>
+        
+        {/* Floating mental health symbols */}
+        <div className="absolute top-1/4 left-1/4 opacity-5">
+          <Heart className="w-32 h-32 text-blue-300 animate-bounce" style={{ animationDelay: '0s', animationDuration: '6s' }} />
         </div>
-      </header>
+        <div className="absolute top-3/4 right-1/4 opacity-5">
+          <Brain className="w-28 h-28 text-green-300 animate-bounce" style={{ animationDelay: '2s', animationDuration: '8s' }} />
+        </div>
+        <div className="absolute top-1/2 right-1/3 opacity-5">
+          <Sparkles className="w-24 h-24 text-purple-300 animate-bounce" style={{ animationDelay: '4s', animationDuration: '7s' }} />
+        </div>
+        
+        {/* Mesh gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-white/50 to-transparent"></div>
+      </div>
+
+      {/* Header */}
+      <Header
+        anonymousMode={anonymousMode}
+        userName={userName}
+        onToggleAnonymousMode={toggleAnonymousMode}
+        onUserNameChange={handleUserNameChange}
+        onShowAuthDialog={() => setShowAuthDialog(true)}
+      />
 
       {/* Crisis Alert */}
       {showCrisisAlert && (
-        <Alert className="max-w-7xl mx-auto mt-4 mx-4 bg-red-50 border-red-200 animate-fade-in">
+        <Alert className="max-w-7xl mx-auto mt-4 mx-4 bg-red-50 border-red-200 animate-fade-in shadow-lg">
           <AlertTriangle className="h-4 w-4 text-red-600" />
           <AlertTitle className="text-red-800">Crisis Support Available</AlertTitle>
           <AlertDescription className="text-red-700">
@@ -257,13 +246,18 @@ const Index = () => {
       )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Welcome Section */}
-        <div className="mb-8 text-center">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2 flex items-center justify-center">
-            {getGreeting()}
-            <Brain className="w-8 h-8 ml-3 text-blue-500" />
-          </h2>
-          <p className="text-gray-600">How are you feeling today? Your thoughts and emotions matter.</p>
+        {/* Enhanced Welcome Section */}
+        <div className="mb-8 text-center relative">
+          <div className="relative inline-block">
+            <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-green-600 bg-clip-text text-transparent mb-4 flex items-center justify-center">
+              {getGreeting()}
+              <Brain className="w-10 h-10 ml-4 text-blue-500 animate-pulse" />
+            </h2>
+            <div className="absolute -inset-4 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-green-500/10 rounded-2xl blur-xl opacity-50"></div>
+          </div>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
+            How are you feeling today? Your thoughts and emotions matter. Let's explore your mental wellness journey together.
+          </p>
         </div>
 
         {/* Anonymous Mode Limitations */}
@@ -273,26 +267,36 @@ const Index = () => {
           </div>
         )}
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:w-fit lg:grid-cols-4 cursor-pointer">
-            <TabsTrigger value="journal" className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 transition-colors">
+        {/* Enhanced Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
+          <TabsList className="grid w-full grid-cols-4 lg:w-fit lg:grid-cols-4 cursor-pointer bg-white/80 backdrop-blur-sm shadow-lg border-0 rounded-2xl p-2">
+            <TabsTrigger 
+              value="journal" 
+              className="flex items-center space-x-2 cursor-pointer hover:bg-blue-50 transition-all duration-200 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-500 data-[state=active]:text-white data-[state=active]:shadow-lg"
+            >
               <MessageSquare className="w-4 h-4" />
               <span>Journal</span>
             </TabsTrigger>
-            <TabsTrigger value="chat" className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 transition-colors">
+            <TabsTrigger 
+              value="chat" 
+              className="flex items-center space-x-2 cursor-pointer hover:bg-green-50 transition-all duration-200 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-blue-500 data-[state=active]:text-white data-[state=active]:shadow-lg"
+            >
               <Heart className="w-4 h-4" />
               <span>AI Chat</span>
             </TabsTrigger>
             <TabsTrigger 
               value="insights" 
-              className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 transition-colors"
+              className="flex items-center space-x-2 cursor-pointer hover:bg-purple-50 transition-all duration-200 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white data-[state=active]:shadow-lg"
               disabled={anonymousMode}
             >
               <TrendingUp className="w-4 h-4" />
               <span>Insights</span>
               {anonymousMode && <Shield className="w-3 h-3 text-amber-500" />}
             </TabsTrigger>
-            <TabsTrigger value="resources" className="flex items-center space-x-2 cursor-pointer hover:bg-gray-100 transition-colors">
+            <TabsTrigger 
+              value="resources" 
+              className="flex items-center space-x-2 cursor-pointer hover:bg-red-50 transition-all duration-200 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-500 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:shadow-lg"
+            >
               <Shield className="w-4 h-4" />
               <span>Resources</span>
             </TabsTrigger>
@@ -544,6 +548,9 @@ const Index = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Footer */}
+      <Footer />
 
       {/* Auth Dialog */}
       <AuthPrompt 
